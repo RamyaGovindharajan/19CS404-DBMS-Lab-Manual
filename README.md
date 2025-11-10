@@ -1,187 +1,292 @@
+# Experiment 2: DDL Commands
 
-# ER Diagram Workshop – Submission Template
+## AIM
+To study and implement DDL commands and different types of constraints.
 
-## Objective
-To understand and apply ER modeling concepts by creating ER diagrams for real-world applications.
+## THEORY
 
-## Purpose
-Gain hands-on experience in designing ER diagrams that represent database structure including entities, relationships, attributes, and constraints.
+### 1. CREATE
+Used to create a new relation (table).
 
+**Syntax:**
+```sql
+CREATE TABLE (
+  field_1 data_type(size),
+  field_2 data_type(size),
+  ...
+);
+```
+### 2. ALTER
+Used to add, modify, drop, or rename fields in an existing relation.
+(a) ADD
+```sql
+ALTER TABLE std ADD (Address CHAR(10));
+```
+(b) MODIFY
+```sql
+ALTER TABLE relation_name MODIFY (field_1 new_data_type(size));
+```
+(c) DROP
+```sql
+ALTER TABLE relation_name DROP COLUMN field_name;
+```
+(d) RENAME
+```sql
+ALTER TABLE relation_name RENAME COLUMN old_field_name TO new_field_name;
+```
+### 3. DROP TABLE
+Used to permanently delete the structure and data of a table.
+```sql
+DROP TABLE relation_name;
+```
+### 4. RENAME
+Used to rename an existing database object.
+```sql
+RENAME TABLE old_relation_name TO new_relation_name;
+```
+### CONSTRAINTS
+Constraints are used to specify rules for the data in a table. If there is any violation between the constraint and the data action, the action is aborted by the constraint. It can be specified when the table is created (using CREATE TABLE) or after it is created (using ALTER TABLE).
+### 1. NOT NULL
+When a column is defined as NOT NULL, it becomes mandatory to enter a value in that column.
+Syntax:
+```sql
+CREATE TABLE Table_Name (
+  column_name data_type(size) NOT NULL
+);
+```
+### 2. UNIQUE
+Ensures that values in a column are unique.
+Syntax:
+```sql
+CREATE TABLE Table_Name (
+  column_name data_type(size) UNIQUE
+);
+```
+### 3. CHECK
+Specifies a condition that each row must satisfy.
+Syntax:
+```sql
+CREATE TABLE Table_Name (
+  column_name data_type(size) CHECK (logical_expression)
+);
+```
+### 4. PRIMARY KEY
+Used to uniquely identify each record in a table.
+Properties:
+Must contain unique values.
+Cannot be null.
+Should contain minimal fields.
+Syntax:
+```sql
+CREATE TABLE Table_Name (
+  column_name data_type(size) PRIMARY KEY
+);
+```
+### 5. FOREIGN KEY
+Used to reference the primary key of another table.
+Syntax:
+```sql
+CREATE TABLE Table_Name (
+  column_name data_type(size),
+  FOREIGN KEY (column_name) REFERENCES other_table(column)
+);
+```
+### 6. DEFAULT
+Used to insert a default value into a column if no value is specified.
+
+Syntax:
+```sql
+CREATE TABLE Table_Name (
+  col_name1 data_type,
+  col_name2 data_type,
+  col_name3 data_type DEFAULT 'default_value'
+);
+```
+
+**Question 1**
+--
+Create a table named Orders with the following constraints:
+OrderID as INTEGER should be the primary key.
+OrderDate as DATE should be not NULL.
+CustomerID as INTEGER should be a foreign key referencing Customers(CustomerID).
+
+```sql
+CREATE TABLE Orders(
+OrderID INTEGER primary key,
+OrderDate DATE NOT NULL,
+CustomerID INTEGER,
+FOREIGN KEY(CustomerID) references Customers(CustomerID)
+);
+```
+
+**Output:**
+
+<img width="1231" height="370" alt="image" src="https://github.com/user-attachments/assets/911b6297-86aa-43f5-9df9-f12bf46a28d7" />
+
+
+**Question 2**
 ---
+Create a table named Shipments with the following constraints:
+ShipmentID as INTEGER should be the primary key.
+ShipmentDate as DATE.
+SupplierID as INTEGER should be a foreign key referencing Suppliers(SupplierID).
+OrderID as INTEGER should be a foreign key referencing Orders(OrderID).
 
-# Scenario A: City Fitness Club Management
+```sql
+CREATE TABLE Shipments(
+ShipmentID INTEGER primary key,
+ShipmentDate DATE,
+SupplierID INTEGER,
+OrderID INTEGER,
+foreign key(SupplierID) references Suppliers(SupplierID),
+foreign key(OrderID) references Orders(OrderID)
+);
+```
 
-**Business Context:**  
-FlexiFit Gym wants a database to manage its members, trainers, and fitness programs.
+**Output:**
 
-**Requirements:**  
-- Members register with name, membership type, and start date.  
-- Each member can join multiple programs (Yoga, Zumba, Weight Training).  
-- Trainers assigned to programs; a program may have multiple trainers.  
-- Members may book personal training sessions with trainers.  
-- Attendance recorded for each session.  
-- Payments tracked for memberships and sessions.
+<img width="1221" height="307" alt="image" src="https://github.com/user-attachments/assets/6860b947-cede-4ac5-901b-e9a5e2306d70" />
 
-### ER Diagram:
-
-![WhatsApp Image 2025-08-30 at 10 19 42_c0a7e083](https://github.com/user-attachments/assets/27a9795f-d59a-4dfd-a44d-49fd52f78289)
-
-
-### Entities and Attributes
-
-| Entity | Attributes (PK, FK)                         | Notes |
-|--------|---------------------------------------------|-------|                         
-| Member |MemberID (PK), Name,MembershipType, StartDate| Stores gym members’ details         |
-| Program     | ProgramID (PK), ProgramName, Type                   | Yoga, Zumba, Weight Training, etc.      |
-| Trainer        |   TrainerID (PK), Name, Specialization                 |Each trainer may handle multiple programs       |
-|  Session      |    SessionID (PK), Date, Time, TrainerID (FK), ProgramID (FK)                |   Personal training or group sessions    |
-|Payment        |  PaymentID (PK), MemberID (FK), Amount, PaymentDate, Type                  |     Tracks membership & session payments  |
-
-### Relationships and Constraints
-
-| Relationship | Cardinality | Participation | Notes |
-|--------------|------------|---------------|-------|
-|  Registers (Member–Program)            | M:N           |  Partial (not all members join all programs)             | A member may join many programs      |
-|  AssignedTo (Trainer–Program)            |  M:N          | Total for Program              |   Programs must have at least one trainer    |
-|   Books (Member–Trainer–Session)           |  M:N          |  Partial             |  Members may book multiple trainers; sessions linked     |
-|Attends (Member–Session)|M:N|Partial|Records attendance|
-|PaysFor (Member–Payment)|1:M|Total for Payment|Each payment belongs to one member|
-|Covers (Payment–Session/Membership)|1:M|Optional|A payment can cover membership fee or personal session|
-
-### Assumptions
-
-1. Each member must have at least one active membership.
-
-2. A program may have multiple trainers, but at least one is mandatory.
-
-3. Members can attend multiple sessions; attendance is recorded separately.
-
-4. Personal training sessions are modeled as “Session” with specific trainer and member.
-
-5. Payments can be for either membership fees or personal sessions.
-
+**Question 3**
 ---
+Create a table named Events with the following columns:
 
-# Scenario B: City Library Event & Book Lending System
+EventID as INTEGER
+EventName as TEXT
+EventDate as DATE
 
-**Business Context:**  
-The Central Library wants to manage book lending and cultural events.
+```sql
+CREATE TABLE Events(
+EventID INTEGER,
+EventName TEXT,
+EventDate DATE
+);
+```
 
-**Requirements:**  
-- Members borrow books, with loan and return dates tracked.  
-- Each book has title, author, and category.  
-- Library organizes events; members can register.  
-- Each event has one or more speakers/authors.  
-- Rooms are booked for events and study.  
-- Overdue fines apply for late returns.
+**Output:**
 
-### ER Diagram:
+<img width="1224" height="445" alt="image" src="https://github.com/user-attachments/assets/a5b52b82-c9d7-4028-8f82-4393daa13f6c" />
 
-
-![WhatsApp Image 2025-08-30 at 09 57 56_026a345e](https://github.com/user-attachments/assets/14ccf734-7804-45da-9593-66820258032c)
-
-
-### Entities and Attributes
-
-| Entity       | Attributes (PK, FK)                                                 | Notes                             |
-| ------------ | ------------------------------------------------------------------- | --------------------------------- |
-| Member       | MemberID (PK), Name, Email, Phone                                   | Library members                   |
-| Book         | BookID (PK), Title, Author, Category                                | Books available in the library    |
-| Loan         | LoanID (PK), MemberID (FK), BookID (FK), LoanDate, ReturnDate, Fine | Tracks lending/return of books    |
-| Event        | EventID (PK), Title, Date, RoomID (FK)                              | Library cultural events           |
-| Speaker      | SpeakerID (PK), Name, Topic                                         | Guest speakers/authors for events |
-| Room         | RoomID (PK), RoomName, Capacity                                     | Rooms for events and study        |
-| Registration | RegID (PK), EventID (FK), MemberID (FK)                             | Members registering for events    |
-
-
-
-### Relationships and Constraints
-
-| Relationship | Entities                          | Cardinality | Participation         | Notes                                              |
-| ------------ | --------------------------------- | ----------- | --------------------- | -------------------------------------------------- |
-| Borrows      | Member ↔ Book (via Loan)          | M\:N        | Total on Loan         | A member can borrow many books; tracked with dates |
-| RegistersFor | Member ↔ Event (via Registration) | M\:N        | Total on Registration | Members can register for multiple events           |
-| HostedIn     | Event ↔ Room                      | M:1         | Total on Event        | Each event must be held in one room                |
-| HasSpeaker   | Event ↔ Speaker                   | M\:N        | Partial               | Events may have multiple speakers                  |
-| FineApplied  | Loan ↔ Member                     | 1\:M        | Partial               | Overdue fines applied to member if late return     |
-
-
-
-### Assumptions
-
-1. A member must exist before borrowing a book or registering for an event.
-
-2. A book can only be borrowed by one member at a time.
-
-3. Every event must be hosted in exactly one room.
-
-4. Events may have zero or multiple speakers.
-
-5. Overdue fines are calculated and stored in Loan.
-
+**Question 4**
 ---
+Write an SQL query to add two new columns, designation and net_salary, to the table Companies. The designation column should have a data type of varchar(50), and the net_salary column should have a data type of number.
 
-# Scenario C: Restaurant Table Reservation & Ordering
+```sql
+ALTER TABLE Companies ADD COLUMN designation varchar(50);
+ALTER TABLE Companies ADD COLUMN net_salary number;
+```
 
-**Business Context:**  
-A popular restaurant wants to manage reservations, orders, and billing.
+**Output:**
 
-**Requirements:**  
-- Customers can reserve tables or walk in.  
-- Each reservation includes date, time, and number of guests.  
-- Customers place food orders linked to reservations.  
-- Each order contains multiple dishes; dishes belong to categories (starter, main, dessert).  
-- Bills generated per reservation, including food and service charges.  
-- Waiters assigned to serve reservations.
+<img width="1224" height="458" alt="image" src="https://github.com/user-attachments/assets/cc1f7e06-60a8-4caa-bc8d-241f72d63970" />
 
-### ER Diagram:
-
-
-![WhatsApp Image 2025-08-30 at 09 26 39_835e2716](https://github.com/user-attachments/assets/ac087ac3-5cea-4665-a928-b629215d9f69)
-
-
-### Entities and Attributes
-
-| Entity      | Attributes (PK, FK)                                           | Notes                               |
-| ----------- | ------------------------------------------------------------- | ----------------------------------- |
-| Customer    | CustomerID (PK), Name, Phone, Email                           | Restaurant customers                |
-| Reservation | ResID (PK), CustomerID (FK), Date, Time, Guests, TableID (FK) | Reservations or walk-ins            |
-| Table       | TableID (PK), Capacity                                        | Physical tables available           |
-| Order       | OrderID (PK), ResID (FK), OrderTime                           | Orders linked to reservations       |
-| Dish        | DishID (PK), Name, Category, Price                            | Menu items (starter, main, dessert) |
-| OrderItem   | OrderItemID (PK), OrderID (FK), DishID (FK), Quantity         | Tracks multiple dishes per order    |
-| Bill        | BillID (PK), ResID (FK), TotalAmount, ServiceCharge, Date     | Bill generated per reservation      |
-| Waiter      | WaiterID (PK), Name, Shift                                    | Waiters assigned to reservations    |
-
-
-
-### Relationships and Constraints
-
-| Relationship | Entities                     | Cardinality | Participation        | Notes                                           |
-| ------------ | ---------------------------- | ----------- | -------------------- | ----------------------------------------------- |
-| Makes        | Customer ↔ Reservation       | 1\:M        | Total on Reservation | Customer can have multiple reservations         |
-| AssignedTo   | Reservation ↔ Table          | M:1         | Total on Reservation | Each reservation linked to one table            |
-| Places       | Reservation ↔ Order          | 1\:M        | Total on Order       | A reservation can have multiple orders          |
-| Contains     | Order ↔ Dish (via OrderItem) | M\:N        | Total on OrderItem   | Orders can contain multiple dishes              |
-| Generates    | Reservation ↔ Bill           | 1:1         | Total on Bill        | Each reservation produces one bill              |
-| ServedBy     | Reservation ↔ Waiter         | M\:N        | Partial              | A reservation can be served by multiple waiters |
-
-### Assumptions
-
-1. A customer must exist before making a reservation.
-
-2. Walk-in customers are treated as reservations with immediate booking.
-
-3. Each reservation is linked to exactly one table.
-
-4. An order can only be placed after a reservation exists.
-
-5. One bill is generated per reservation (covers food + service).
-
-6. A reservation can be served by one or more waiters.
-
+**Question 5**
 ---
+Insert a student with RollNo 201, Name David Lee, Gender M, Subject Physics, and MARKS 92 into the Student_details table.
+
+```sql
+INSERT INTO Student_details(RollNo,Name,Gender,Subject,MARKS)values
+(201,'David Lee','M','Physics',92);
+```
+
+**Output:**
+<img width="1227" height="325" alt="image" src="https://github.com/user-attachments/assets/76608d2e-ade8-4da8-8211-eb882751066b" />
+
+**Question 6**
+---
+Write a SQL query to add birth_date attribute as timestamp (datatype) in the table customer 
+
+Sample table: customer
+
+```sql
+ALTER TABLE customer ADD birth_date timestamp;
+```
+
+**Output:**
+<img width="1222" height="410" alt="image" src="https://github.com/user-attachments/assets/b76faaac-68a9-4d24-b9fa-d44a4a08d2c1" />
+
+**Question 7**
+---
+Create a new table named orders with the following specifications:
+ord_id as TEXT with a length of 4.
+item_id as TEXT.
+ord_date as DATE.
+ord_qty as INTEGER.
+cost as INTEGER.
+The primary key is a composite key consisting of item_id and ord_date.
+ord_id and item_id should not accept NULL
+
+```sql
+CREATE TABLE orders(
+ord_id TEXT CHECK(length(ord_id)=4) NOT NULL,
+item_id TEXT NOT NULL,
+ord_date DATE,
+ord_qty INTEGER,
+cost INTEGER,
+primary key(item_id,ord_date)
+);
+```
+
+**Output:**
+
+<img width="1218" height="402" alt="image" src="https://github.com/user-attachments/assets/944c9bbb-7a01-4c35-8f36-24eddb237bc9" />
+
+**Question 8**
+---
+Insert the following customers into the Customers table:
+
+CustomerID | Name       |  Address  |   City     |   ZipCode
+---------- | -----------| ----------|  ----------| ----------
+302        | Laura Croft| 456 Elm St| Seattle    |98101
+303        | Bruce Wayne| 789 Oak St| Gotham     | 10001
+
+```sql
+INSERT INTO Customers(CustomerID,Name,Address,City,ZipCode)values
+(302,'Laura Croft','456 Elm St','Seattle',98101),
+(303,'Bruce Wayne','789 Oak St','Gotham',10001);
+```
+
+**Output:**
+
+<img width="1218" height="441" alt="image" src="https://github.com/user-attachments/assets/7456aab9-88fa-4a81-9e82-56ec235f4af8" />
+
+**Question 9**
+---
+Insert all books from Out_of_print_books into Books
+
+Table attributes are ISBN, Title, Author, Publisher, YearPublished
+```sql
+INSERT INTO Books(ISBN,Title,Author,Publisher,YearPublished) 
+SELECT ISBN,Title,Author,Publisher,YearPublished
+FROM Out_of_print_books;
+```
+
+**Output:**
+
+<img width="1232" height="356" alt="image" src="https://github.com/user-attachments/assets/fdeb242a-5f67-4c3d-a44e-6fd510ff0dd9" />
+
+**Question 10**
+---
+Create a table named Department with the following constraints:
+DepartmentID as INTEGER should be the primary key.
+DepartmentName as TEXT should be unique and not NULL.
+Location as TEXT.
+
+```sql
+CREATE TABLE Department(
+DepartmentID INTEGER primary key,
+DepartmentName TEXT unique NOT NULL,
+Location TEXT
+);
+```
+
+**Output:**
+
+<img width="1223" height="341" alt="image" src="https://github.com/user-attachments/assets/2268ad5e-f5a3-483d-b0ed-41ee6ec7d654" />
+
+**SEB Grade**
+
+<img width="1189" height="81" alt="image" src="https://github.com/user-attachments/assets/b0cae284-e65f-46b7-9519-a86ffbbeeb94" />
 
 ## RESULT
-
-Thus the ER Diagram for each scenario has been drawn and explained successfully.
+Thus, the SQL queries to implement different types of constraints and DDL commands have been executed successfully.
